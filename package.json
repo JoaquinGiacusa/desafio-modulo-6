@@ -1,0 +1,24 @@
+{
+  "name": "desafio-modulo-6",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "17.0.5",
+    "@vaadin/router": "^1.7.4",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.2",
+    "firebase": "8.7.1",
+    "firebase-admin": "^10.0.1",
+    "nodemon": "^2.0.15",
+    "parcel": "^2.0.1",
+    "typescript": "^4.5.4"
+  },
+  "scripts": {
+    "dev:front": "parcel serve ./client/index.html",
+    "build:front": "parcel build ./client/index.html",
+    "dev:api": "nodemon --watch ./server/index.ts --exec ts-node ./server/dev.ts",
+    "build:api": "tsc",
+    "build": "yarn build:front && yarn build:api",
+    "start": "node ./server/index.js"
+  }
+}

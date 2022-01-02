@@ -1,0 +1,11 @@
+:root {
+  --color-principal: green;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
