@@ -1,7 +1,7 @@
 import { Router } from "@vaadin/router";
 
 customElements.define(
-  "new-game",
+  "join-room",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -22,10 +22,10 @@ customElements.define(
           <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
         </div>
         <div class="input-container">
-          <input-el text="Nombre">Tu Nombre</input-el>
+          <input-el text="Nombre" placeholder="código"></input-el>
         </div>
         <div class="boton-container">
-          <boton-el class="return-to-game-btn">Empezar</boton-el>
+          <boton-el class="return-to-game-btn">Ingresar a la sala</boton-el>
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -49,7 +49,7 @@ customElements.define(
         text-align: center;
         width:250px;
         margin-top: 40px;
-        margin-bottom: 10px;
+        margin-bottom: 30px;
       }
     
       @media (min-width: 769px) {

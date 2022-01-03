@@ -33,15 +33,9 @@ customElements.define(
     </div>
       `;
 
-      function goTo() {
-        const newGameBtn = div.querySelector(".new-game-btn");
-        newGameBtn.addEventListener("click", () => {
-          Router.go("/rules");
-        });
-
-        const returnToGameNtn = div.querySelector(".return-to-game-btn");
-        returnToGameNtn.addEventListener("click", () => {
-          Router.go("/rules");
+      function goTo(ruta, clase) {
+        div.querySelector(clase).addEventListener("click", () => {
+          Router.go(ruta);
         });
       }
 
@@ -105,7 +99,9 @@ customElements.define(
         }
       }
       `;
-      goTo();
+      goTo("/new-game", ".new-game-btn");
+      goTo("/join-room", ".return-to-game-btn");
+
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);
     }
