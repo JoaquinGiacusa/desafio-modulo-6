@@ -1,7 +1,7 @@
 import * as express from "express";
 import { firestore, rtdb } from "./db";
 import { nanoid } from "nanoid";
-//import * as cors from "cors";
+import * as cors from "cors";
 //process.env.PORT para declarar una variable de ambiente
 const port = process.env.PORT || 3000;
 //const dev = process.env.NODE_ENV == "development";

@@ -1,7 +1,7 @@
 import { Router } from "@vaadin/router";
 
 customElements.define(
-  "home-page",
+  "new-game",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -32,18 +32,6 @@ customElements.define(
         </div>
     </div>
       `;
-
-      function goTo() {
-        const newGameBtn = div.querySelector(".new-game-btn");
-        newGameBtn.addEventListener("click", () => {
-          Router.go("/rules");
-        });
-
-        const returnToGameNtn = div.querySelector(".return-to-game-btn");
-        returnToGameNtn.addEventListener("click", () => {
-          Router.go("/rules");
-        });
-      }
 
       style.innerHTML = `
       .home-page {
@@ -105,7 +93,7 @@ customElements.define(
         }
       }
       `;
-      goTo();
+
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);
     }
