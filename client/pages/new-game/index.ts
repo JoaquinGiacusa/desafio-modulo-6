@@ -1,3 +1,4 @@
+import { state } from "../../state";
 import { Router } from "@vaadin/router";
 
 customElements.define(
@@ -10,6 +11,19 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+
+      const boton = this.shadow.querySelector(".return-to-game-btn");
+      const inputComp = this.shadow.querySelector(".input-text");
+      const inputEl = inputComp.querySelector(".input") as any;
+
+      boton.addEventListener("click", () => {
+        if (inputEl.value != "") {
+          state.setFullName(inputEl.value);
+          state.register(() => {
+            state.signIn();
+          });
+        }
+      });
     }
     render() {
       const style = document.createElement("style");
@@ -22,7 +36,7 @@ customElements.define(
           <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
         </div>
         <div class="input-container">
-          <input-el text="Nombre">Tu Nombre</input-el>
+          <input-el class="input-text" text="Nombre">Tu Nombre</input-el>
         </div>
         <div class="boton-container">
           <boton-el class="return-to-game-btn">Empezar</boton-el>

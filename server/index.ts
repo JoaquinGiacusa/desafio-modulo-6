@@ -11,10 +11,10 @@ import * as path from "path";
 const app = express();
 
 app.use(express.json());
-//app.use(cors());
+app.use(cors());
 
-// const userCollection = firestore.collection("users");
-// const roomsCollection = firestore.collection("rooms");
+const userCollection = firestore.collection("users");
+const roomsCollection = firestore.collection("rooms");
 
 app.get("/test", (req, res) => {
   res.json({
@@ -22,25 +22,44 @@ app.get("/test", (req, res) => {
   });
 });
 
-// app.post("/signup", (req, res) => {
-//   const email = req.body.email;
-//   const nombre = req.body.nombre;
+app.post("/signup", (req, res) => {
+  const name = req.body.nombre;
 
-//   userCollection
-//     .where("email", "==", email)
-//     .get()
-//     .then((searchResponse) => {
-//       if (searchResponse.empty) {
-//         userCollection.add({ email, nombre }).then((newUserRef) => {
-//           res.json({ id: newUserRef.id, new: true });
-//         });
-//       } else {
-//         res.status(400).json({
-//           message: "user already exists",
-//         });
-//       }
-//     });
-// });
+  userCollection
+    .where("name", "==", name)
+    .get()
+    .then((searchResponse) => {
+      if (searchResponse.empty) {
+        userCollection.add({ name }).then((newUserRef) => {
+          res.json({ id: newUserRef.id, new: true });
+        });
+      } else {
+        res.status(400).json({
+          message: "user already exists",
+        });
+      }
+    });
+});
+
+// para logear o identificar
+app.post("/auth", (req, res) => {
+  const { name } = req.body;
+
+  userCollection
+    .where("name", "==", name)
+    .get()
+    .then((searchResponse) => {
+      if (searchResponse.empty) {
+        res.status(404).json({
+          message: "user not found",
+        });
+      } else {
+        res.json({
+          id: searchResponse.docs[0].id,
+        });
+      }
+    });
+});
 
 // //la primera linea es para servir el frontend, y la segunda es para setear un default en la url y no falle si no esta declarado en el BE
 app.use(express.static("dist"));
