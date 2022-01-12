@@ -1,7 +1,8 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
-  "home-page",
+  "register-room",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -10,6 +11,26 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+
+      const link = this.shadow.querySelector(".link");
+      link.addEventListener("click", () => {
+        Router.go("/signin");
+      });
+
+      const boton = this.shadow.querySelector(".register-to-game-btn");
+      const inputComp = this.shadow.querySelector(".input-text");
+      const inputEl = inputComp.querySelector(".input") as any;
+
+      boton.addEventListener("click", () => {
+        if (inputEl.value != "") {
+          state.setFullName(inputEl.value);
+          state.register(() => {
+            state.signIn(() => {
+              Router.go("/new-game");
+            });
+          });
+        }
+      });
     }
     render() {
       const style = document.createElement("style");
@@ -17,13 +38,16 @@ customElements.define(
       const div = document.createElement("div");
 
       div.innerHTML = `
-      <div class="home-page">
+      <div class="new-game-page">
         <div class="title__container">
-          <custom-text text="title"> Piedra Papel ó Tijera</custom-text>
+          <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
+        </div>
+        <div class="input-container">
+          <input-el class="input-text">Tu Nombre</input-el>
         </div>
         <div class="boton-container">
-          <boton-el class="iniciar-sesion">Iniciar sesión</boton-el>
-          <boton-el class="registrarse">Registrarse</boton-el>
+          <boton-el class="register-to-game-btn">Registrarse</boton-el>
+          <a href="" class="link">Ya tengo cuenta</a>
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -33,14 +57,8 @@ customElements.define(
     </div>
       `;
 
-      function goTo(ruta, clase) {
-        div.querySelector(clase).addEventListener("click", () => {
-          Router.go(ruta);
-        });
-      }
-
       style.innerHTML = `
-      .home-page {
+      .new-game-page {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;
@@ -53,13 +71,17 @@ customElements.define(
         text-align: center;
         width:250px;
         margin-top: 40px;
-        margin-bottom: 40px;
+        margin-bottom: 10px;
       }
     
-      @media (min-width: 900px) {
+      @media (min-width: 769px) {
         .title__container {
-          
+          margin-bottom: 50px;
         }
+      }
+
+      .input-container{
+        margin-bottom: 20px;
       }
     
       .boton-container{
@@ -69,8 +91,11 @@ customElements.define(
         align-items: center;
       }
 
-      .iniciar-sesion{
-        margin-bottom: 20px;
+      .link{
+        font-size: 20px;
+        font-family: 'Odibee Sans', cursive;
+        color: black;
+        margin-top:10px;
       }
     
       .jugada-container{
@@ -99,8 +124,6 @@ customElements.define(
         }
       }
       `;
-      goTo("/register", ".registrarse");
-      goTo("/signin ", ".iniciar-sesion");
 
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);

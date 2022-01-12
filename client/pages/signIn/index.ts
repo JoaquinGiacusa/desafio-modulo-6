@@ -1,7 +1,8 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
-  "home-page",
+  "sign-in",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -10,6 +11,16 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+      const inputTextComp = this.shadow.querySelector(".input-text");
+      const inputEl = inputTextComp.querySelector(".input") as any;
+
+      const signInBtn = this.shadow.querySelector(".continue-btn");
+      signInBtn.addEventListener("click", () => {
+        state.setFullName(inputEl.value);
+        state.signIn(() => {
+          Router.go("/new-game");
+        });
+      });
     }
     render() {
       const style = document.createElement("style");
@@ -17,13 +28,16 @@ customElements.define(
       const div = document.createElement("div");
 
       div.innerHTML = `
-      <div class="home-page">
+      <div class="new-game-page">
         <div class="title__container">
-          <custom-text text="title"> Piedra Papel ó Tijera</custom-text>
+          <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
+        </div>
+        <div class="input-container">
+          <input-el class="input-text">Ingresa tu usuario</input-el>
         </div>
         <div class="boton-container">
-          <boton-el class="iniciar-sesion">Iniciar sesión</boton-el>
-          <boton-el class="registrarse">Registrarse</boton-el>
+          <boton-el class="continue-btn">Continuar</boton-el>
+          
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -33,14 +47,8 @@ customElements.define(
     </div>
       `;
 
-      function goTo(ruta, clase) {
-        div.querySelector(clase).addEventListener("click", () => {
-          Router.go(ruta);
-        });
-      }
-
       style.innerHTML = `
-      .home-page {
+      .new-game-page {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;
@@ -53,13 +61,17 @@ customElements.define(
         text-align: center;
         width:250px;
         margin-top: 40px;
-        margin-bottom: 40px;
+        margin-bottom: 10px;
       }
     
-      @media (min-width: 900px) {
+      @media (min-width: 769px) {
         .title__container {
-          
+          margin-bottom: 50px;
         }
+      }
+
+      .input-container{
+        margin-bottom: 20px;
       }
     
       .boton-container{
@@ -67,10 +79,6 @@ customElements.define(
         display: flex;
         flex-direction: column;
         align-items: center;
-      }
-
-      .iniciar-sesion{
-        margin-bottom: 20px;
       }
     
       .jugada-container{
@@ -99,8 +107,6 @@ customElements.define(
         }
       }
       `;
-      goTo("/register", ".registrarse");
-      goTo("/signin ", ".iniciar-sesion");
 
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);

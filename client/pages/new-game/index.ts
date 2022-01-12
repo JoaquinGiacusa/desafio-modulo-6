@@ -12,17 +12,20 @@ customElements.define(
     connectedCallback() {
       this.render();
 
-      const boton = this.shadow.querySelector(".return-to-game-btn");
-      const inputComp = this.shadow.querySelector(".input-text");
-      const inputEl = inputComp.querySelector(".input") as any;
-
-      boton.addEventListener("click", () => {
-        if (inputEl.value != "") {
-          state.setFullName(inputEl.value);
-          state.register(() => {
-            state.signIn();
+      const newGameBoton = this.shadow.querySelector(".nuevo-juego");
+      newGameBoton.addEventListener("click", () => {
+        state.askNewRoom(() => {
+          state.accessToRoom(() => {
+            state.checkHostAndGuest(() => {
+              Router.go("/share-key");
+            });
           });
-        }
+        });
+      });
+
+      const joinGameBoton = this.shadow.querySelector(".unirse-a-sala");
+      joinGameBoton.addEventListener("click", () => {
+        Router.go("join-room");
       });
     }
     render() {
@@ -35,11 +38,10 @@ customElements.define(
         <div class="title__container">
           <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
         </div>
-        <div class="input-container">
-          <input-el class="input-text" text="Nombre">Tu Nombre</input-el>
-        </div>
+        
         <div class="boton-container">
-          <boton-el class="return-to-game-btn">Empezar</boton-el>
+          <boton-el class="nuevo-juego">Generar sala</boton-el>
+          <boton-el class="unirse-a-sala">Unirse a una sala</boton-el>
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -71,10 +73,6 @@ customElements.define(
           margin-bottom: 50px;
         }
       }
-
-      .input-container{
-        margin-bottom: 20px;
-      }
     
       .boton-container{
         width: 100%;
@@ -82,7 +80,9 @@ customElements.define(
         flex-direction: column;
         align-items: center;
       }
-
+      .unirse-a-sala{
+        margin-top: 30px;
+      }
     
       .jugada-container{
         width:280px;

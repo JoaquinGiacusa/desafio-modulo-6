@@ -1,7 +1,7 @@
 import { Router } from "@vaadin/router";
 
 customElements.define(
-  "home-page",
+  "play-game",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -18,12 +18,9 @@ customElements.define(
 
       div.innerHTML = `
       <div class="home-page">
-        <div class="title__container">
-          <custom-text text="title"> Piedra Papel ó Tijera</custom-text>
-        </div>
-        <div class="boton-container">
-          <boton-el class="iniciar-sesion">Iniciar sesión</boton-el>
-          <boton-el class="registrarse">Registrarse</boton-el>
+        <div class="text-container">
+          <custom-text>Elije uno</custom-text>
+          <boton-el class="return-to-game-btn">Regresar al inicio</boton-el>
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -46,33 +43,22 @@ customElements.define(
         display: flex;
         flex-direction: column;
         align-items: center;
-      } 
-    
-      .title__container{
-        margin: 0 auto;
-        text-align: center;
-        width:250px;
-        margin-top: 40px;
-        margin-bottom: 40px;
-      }
-    
-      @media (min-width: 900px) {
-        .title__container {
-          
-        }
-      }
-    
-      .boton-container{
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
       }
 
-      .iniciar-sesion{
+      .text-container{
+        width: 100%;
+        width: 300px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        text-align:center;
+        justify-content: center;
+      }
+
+      .new-game-btn{
         margin-bottom: 20px;
       }
-    
+
       .jugada-container{
         width:280px;
         display: flex;
@@ -88,10 +74,10 @@ customElements.define(
           bottom: -70px;
         }
       }
-    
+
       .jugada{
       }
-      
+
       @media (min-width: 769px) {
         .jugada {
         height:180px;
@@ -99,8 +85,8 @@ customElements.define(
         }
       }
       `;
-      goTo("/register", ".registrarse");
-      goTo("/signin ", ".iniciar-sesion");
+
+      goTo("/", ".return-to-game-btn");
 
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);

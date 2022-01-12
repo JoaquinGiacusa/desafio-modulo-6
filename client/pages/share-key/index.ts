@@ -1,29 +1,41 @@
+import { state } from "../../state";
 import { Router } from "@vaadin/router";
 
 customElements.define(
-  "home-page",
+  "share-key",
   class extends HTMLElement {
-    shadow: ShadowRoot;
+    roomId: string;
+    name: string;
     constructor() {
       super();
-      this.shadow = this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
+      const cs = state.getState();
+      this.roomId = cs.roomId;
+      this.name = cs.fullName;
+
       this.render();
+      state.checkUsersOnline(() => {
+        Router.go("/play-game");
+      });
     }
     render() {
       const style = document.createElement("style");
       const imageURL = require("url:../../img/fondo-full.png");
-      const div = document.createElement("div");
 
-      div.innerHTML = `
-      <div class="home-page">
-        <div class="title__container">
-          <custom-text text="title"> Piedra Papel ó Tijera</custom-text>
+      this.innerHTML = `
+      <div class="main-container">
+        <div class="header">
+          <div class="scores">
+            <h3>${this.name}:10</h3>
+            <h3>Joaquin:10</h3>
+          </div>
+          <div class="header-roomId">Sala:${this.roomId}</div>
         </div>
-        <div class="boton-container">
-          <boton-el class="iniciar-sesion">Iniciar sesión</boton-el>
-          <boton-el class="registrarse">Registrarse</boton-el>
+        <div class="text-container">
+          <custom-text>Compartí el código:</custom-text>
+          <p class="codigo-roomId">${this.roomId}</p>
+          <custom-text>Con tu contrincante</custom-text>
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -33,44 +45,38 @@ customElements.define(
     </div>
       `;
 
-      function goTo(ruta, clase) {
-        div.querySelector(clase).addEventListener("click", () => {
-          Router.go(ruta);
-        });
-      }
-
       style.innerHTML = `
-      .home-page {
+      .main-container {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
       } 
-    
-      .title__container{
-        margin: 0 auto;
-        text-align: center;
-        width:250px;
-        margin-top: 40px;
-        margin-bottom: 40px;
-      }
-    
-      @media (min-width: 900px) {
-        .title__container {
-          
-        }
-      }
-    
-      .boton-container{
-        width: 100%;
+
+      .text-container{
+        height:320px;
+        width:280px;
+        margin-top: 100px;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         align-items: center;
       }
+      
+      .header{
+        max-width: 800px;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        
+      }
 
-      .iniciar-sesion{
-        margin-bottom: 20px;
+      .codigo-roomId{
+        margin:0px;
+        font-size: 60px;
+        font-family: 'Odibee Sans', cursive;
       }
     
       .jugada-container{
@@ -99,11 +105,8 @@ customElements.define(
         }
       }
       `;
-      goTo("/register", ".registrarse");
-      goTo("/signin ", ".iniciar-sesion");
 
-      this.shadow.appendChild(div);
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

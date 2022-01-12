@@ -1,8 +1,10 @@
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3000";
+import { callbackify } from "util";
+import { rtdb } from "./rtdb";
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3005";
 
 type Jugada = "piedra" | "papel" | "tijera";
 type Game = {
-  computerPlay: Jugada;
+  guestPlay: Jugada;
   myPlays: Jugada;
 };
 
@@ -12,8 +14,9 @@ const state = {
     userId: "",
     roomId: "",
     rtdbRoomId: "",
-    currentGame: { computerPlay: "", myPlay: "" },
+    currentGame: { guestPlay: "", myPlay: "" },
     history: [],
+    status: {},
   },
   listeners: [],
 
@@ -37,14 +40,14 @@ const state = {
     this.pushToHistory(move);
   },
 
-  whoWins(myPlay: Jugada, computerPlay: Jugada) {
-    const ganeConPiedra = myPlay == "piedra" && computerPlay == "tijera";
-    const ganeConPapel = myPlay == "papel" && computerPlay == "piedra";
-    const ganeConTijera = myPlay == "tijera" && computerPlay == "papel";
+  whoWins(myPlay: Jugada, guestPlay: Jugada) {
+    const ganeConPiedra = myPlay == "piedra" && guestPlay == "tijera";
+    const ganeConPapel = myPlay == "papel" && guestPlay == "piedra";
+    const ganeConTijera = myPlay == "tijera" && guestPlay == "papel";
 
-    const empateConPiedra = myPlay == "piedra" && computerPlay == "piedra";
-    const empateConPapel = myPlay == "papel" && computerPlay == "papel";
-    const empateConTijera = myPlay == "tijera" && computerPlay == "tijera";
+    const empateConPiedra = myPlay == "piedra" && guestPlay == "piedra";
+    const empateConPapel = myPlay == "papel" && guestPlay == "papel";
+    const empateConTijera = myPlay == "tijera" && guestPlay == "tijera";
 
     if (empateConPiedra || empateConPapel || empateConTijera) {
       return "Empate";
@@ -59,7 +62,7 @@ const state = {
     var ganadas = 0;
     var perdidas = 0;
     for (const jugada of history) {
-      const resultado = this.whoWins(jugada.myPlay, jugada.computerPlay);
+      const resultado = this.whoWins(jugada.myPlay, jugada.guestPlay);
 
       if (resultado == "Empate") {
       } else if (resultado == "Ganaste") {
@@ -115,11 +118,163 @@ const state = {
           return res.json();
         })
         .then((data) => {
-          cs.userId = data.id;
-          this.setState(cs);
+          console.log(data);
+          if (data.message == "user not found") {
+            console.error(data.message);
+          } else {
+            cs.userId = data.id;
+            this.setState(cs);
+            callback();
+          }
         });
     } else {
+      console.error("no hay un fullname en el state");
     }
+  },
+
+  askNewRoom(callback?) {
+    const cs = this.getState();
+
+    if (cs.userId) {
+      fetch(API_BASE_URL + "/rooms", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ userId: cs.userId }),
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          cs.roomId = data.id.toString();
+          this.setState(cs);
+          callback();
+        });
+    } else {
+      console.error("no hay userId");
+    }
+  },
+
+  accessToRoom(callback?) {
+    const cs = this.getState();
+    const roomId = cs.roomId;
+
+    fetch(API_BASE_URL + "/rooms/" + roomId + "?userId=" + cs.userId)
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        cs.rtdbRoomId = data.rtdbRoomId;
+        this.setState(cs);
+        callback();
+      });
+  },
+
+  //para ver si ya hay un host o un guest en la rtdb (no usa fb-admin)
+  checkHostAndGuest(callback?) {
+    const cs = this.getState();
+    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+    chatroomsRef.on("value", (snapshot) => {
+      const rtdbRoomRef = snapshot.val();
+
+      if (rtdbRoomRef.host == undefined || rtdbRoomRef.guest == undefined) {
+        this.setHostAndGuest();
+      } else if (
+        rtdbRoomRef.host !== undefined &&
+        rtdbRoomRef.guest !== undefined
+      ) {
+        if (cs.fullName == rtdbRoomRef.host.fullname) {
+          console.log("soy el host");
+          cs.status = { "1": "soy el host" };
+        } else if (cs.fullName == rtdbRoomRef.guest.fullname) {
+          cs.status = { "2": "soy el guest" };
+        } else {
+          cs.status = {
+            "3": "ya hay dos usuarios en esta sala y no eres ninguno de ellos",
+          };
+        }
+        this.setState(cs);
+      }
+      callback();
+
+      //this.setState(cs);
+    });
+  },
+
+  //para setear un host o gues en la rtdb
+  setHostAndGuest(callback?) {
+    const cs = this.getState();
+
+    fetch(API_BASE_URL + "/hostorguest", {
+      method: "post",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        fullName: cs.fullName,
+        userId: cs.userId,
+        roomId: cs.roomId,
+        rtdbRoomId: cs.rtdbRoomId,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  },
+
+  checkUsersOnline(callback?) {
+    const cs = this.getState();
+    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+    chatroomsRef.on("value", (snapshot) => {
+      const rtdbRoomRef = snapshot.val();
+
+      if (rtdbRoomRef.host.online && rtdbRoomRef.guest.online) {
+        console.log("estan los 2 online");
+        cs.status = "estan los 2 online";
+        this.setState(cs);
+        callback();
+      }
+    });
+  },
+
+  setOffline() {
+    const cs = this.getState();
+
+    fetch(API_BASE_URL + "/setoffline", {
+      method: "post",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        userId: cs.userId,
+        rtdbRoomId: cs.rtdbRoomId,
+      }),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+      });
+  },
+
+  // listenRoom() {
+  //   const cs = this.getState();
+
+  //   const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+  //   chatroomsRef.on("value", (snapshot) => {
+  //     // const messagesFromServer = snapshot.val();
+  //     // const messagesList = map(messagesFromServer.messages);
+  //     // cs.messages = messagesList;
+  //     this.setState(cs);
+  //   });
+  // },
+
+  setExistentRoomId(roomId) {
+    const cs = this.getState();
+    cs.roomId = roomId;
+    this.setState(cs);
   },
 
   getState() {
