@@ -176,9 +176,6 @@ const state = {
       const rtdbRoomRef = snapshot.val();
       console.log("rtdbRoomRef", rtdbRoomRef);
 
-      /*   if (rtdbRoomRef.host == undefined || rtdbRoomRef.guest == undefined) {
-        this.setHostAndGuest();
-      } else  */
       if (rtdbRoomRef.host !== undefined && rtdbRoomRef.guest !== undefined) {
         if (cs.fullName == rtdbRoomRef.host.fullname) {
           cs.status = { "1": "soy el host" };
@@ -190,6 +187,14 @@ const state = {
           };
         }
         this.setState(cs);
+        console.log("CALLBACK ASDASD");
+
+        callback();
+      } else if (
+        rtdbRoomRef.host == undefined ||
+        rtdbRoomRef.guest == undefined
+      ) {
+        //this.setHostAndGuest();
         callback();
       }
 
@@ -216,6 +221,8 @@ const state = {
       })
       .then((data) => {
         console.log(data);
+        cs.status = data;
+        this.setState(cs);
         callback();
       });
   },

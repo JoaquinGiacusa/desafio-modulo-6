@@ -25,16 +25,25 @@ customElements.define(
           state.signIn(() => {
             state.accessToRoom(() => {
               state.checkHostAndGuest(() => {
-                state.setHostAndGuest(() => {
-                  if (cs.status.hasOwnProperty("3")) {
-                    Router.go("/complete-room");
-                  } else if (
-                    cs.status.hasOwnProperty("1") ||
-                    cs.status.hasOwnProperty("2")
-                  ) {
-                    Router.go("/share-key");
-                  }
-                });
+                if (cs.status.hasOwnProperty("3")) {
+                  Router.go("/complete-room");
+                } else {
+                  state.setHostAndGuest(() => {
+                    if (cs.status.message == "hostorguest completo") {
+                      Router.go("/share-key");
+                    }
+                  });
+                }
+                /* else if (
+
+                  // cs.status.hasOwnProperty("1") ||
+                  // cs.status.hasOwnProperty("2") ||
+                  // cs.status.message == "hostorguest completo"
+                ) {
+                  
+
+                  Router.go("/share-key");
+                } */
               });
             });
           });
