@@ -15,7 +15,9 @@ import "./pages/register";
 import "./pages/signIn";
 import "./pages/join-room";
 import "./pages/share-key";
+import "./pages/reglas";
 import "./pages/play-game";
+import "./pages/waiting-play";
 import "./pages/complete-room";
 
 (function () {
@@ -23,10 +25,13 @@ import "./pages/complete-room";
 })();
 
 // state.setState({
-//   fullName: "Joaq",
-//   userId: "NvuB4EzbiWDanSpzVxGh",
-//   roomId: "9525",
+//   //  fullName: "Joa",
+//   userId: "1uZNuVSwBqhKks2FYhJP",
+//   rtdbRoomId: "yOjVQVp4LBPu6flvEQb5K",
 // });
+
+// state.setOnline();
 // console.log(state.getState());
 
-// state.setHostAndGuest();
+// // state.setHostAndGuest();
+// state.setOffline();

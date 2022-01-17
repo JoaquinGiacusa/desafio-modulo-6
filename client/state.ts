@@ -1,4 +1,3 @@
-import { callbackify } from "util";
 import { rtdb } from "./rtdb";
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3005";
 
@@ -173,18 +172,15 @@ const state = {
   checkHostAndGuest(callback?) {
     const cs = this.getState();
     const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
-
-    chatroomsRef.on("value", (snapshot) => {
+    chatroomsRef.get().then((snapshot) => {
       const rtdbRoomRef = snapshot.val();
+      console.log("rtdbRoomRef", rtdbRoomRef);
 
-      if (rtdbRoomRef.host == undefined || rtdbRoomRef.guest == undefined) {
+      /*   if (rtdbRoomRef.host == undefined || rtdbRoomRef.guest == undefined) {
         this.setHostAndGuest();
-      } else if (
-        rtdbRoomRef.host !== undefined &&
-        rtdbRoomRef.guest !== undefined
-      ) {
+      } else  */
+      if (rtdbRoomRef.host !== undefined && rtdbRoomRef.guest !== undefined) {
         if (cs.fullName == rtdbRoomRef.host.fullname) {
-          console.log("soy el host");
           cs.status = { "1": "soy el host" };
         } else if (cs.fullName == rtdbRoomRef.guest.fullname) {
           cs.status = { "2": "soy el guest" };
@@ -194,8 +190,8 @@ const state = {
           };
         }
         this.setState(cs);
+        callback();
       }
-      callback();
 
       //this.setState(cs);
     });
@@ -220,6 +216,7 @@ const state = {
       })
       .then((data) => {
         console.log(data);
+        callback();
       });
   },
 
@@ -230,13 +227,44 @@ const state = {
     chatroomsRef.on("value", (snapshot) => {
       const rtdbRoomRef = snapshot.val();
 
-      if (rtdbRoomRef.host.online && rtdbRoomRef.guest.online) {
-        console.log("estan los 2 online");
-        cs.status = "estan los 2 online";
-        this.setState(cs);
-        callback();
+      if (rtdbRoomRef.host != undefined && rtdbRoomRef.guest != undefined) {
+        if (
+          rtdbRoomRef.host.online == true &&
+          rtdbRoomRef.guest.online == true
+        ) {
+          callback();
+        }
       }
+      // if (rtdbRoomRef.host.online && rtdbRoomRef.guest.online) {
+      //   console.log("estan los 2 online");
+      //   cs.status = "estan los 2 online";
+      //   this.setState(cs);
+      //   callback();
+      // }
     });
+  },
+
+  setOnline(callback?) {
+    const cs = this.getState();
+    if (cs.rtdbRoomId) {
+      fetch(API_BASE_URL + "/setonline", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          userId: cs.userId,
+          rtdbRoomId: cs.rtdbRoomId,
+        }),
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log("DATA DEL SETONLINE XD", data);
+          callback();
+        });
+    } else {
+      console.error("hubo un error en el setonline");
+    }
   },
 
   setOffline() {
@@ -256,6 +284,19 @@ const state = {
       .then((data) => {
         console.log(data);
       });
+  },
+
+  listenReady(callback) {
+    const cs = this.getState();
+    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+    chatroomsRef.on("value", (snapshot) => {
+      const rtdbRoomRef = snapshot.val();
+
+      if (rtdbRoomRef.host.ready == true && rtdbRoomRef.guest.ready == true) {
+        callback();
+      }
+    });
   },
 
   // listenRoom() {

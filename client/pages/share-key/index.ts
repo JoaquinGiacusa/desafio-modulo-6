@@ -14,9 +14,16 @@ customElements.define(
       this.roomId = cs.roomId;
       this.name = cs.fullName;
 
+      window.addEventListener("beforeunload", () => {
+        state.setOffline();
+      });
+
       this.render();
-      state.checkUsersOnline(() => {
-        Router.go("/play-game");
+
+      state.setOnline(() => {
+        state.checkUsersOnline(() => {
+          Router.go("/reglas-game");
+        });
       });
     }
     render() {

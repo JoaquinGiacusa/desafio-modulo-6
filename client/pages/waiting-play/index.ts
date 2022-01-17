@@ -2,7 +2,7 @@ import { Router } from "@vaadin/router";
 import { state } from "../../state";
 
 customElements.define(
-  "home-page",
+  "waiting-play",
   class extends HTMLElement {
     shadow: ShadowRoot;
     constructor() {
@@ -11,9 +11,6 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
-      // window.addEventListener("onload", () => {
-      //   state.setOffline();
-      // });
     }
     render() {
       const style = document.createElement("style");
@@ -21,13 +18,10 @@ customElements.define(
       const div = document.createElement("div");
 
       div.innerHTML = `
-      <div class="home-page">
-        <div class="title__container">
-          <custom-text text="title"> Piedra Papel ó Tijera</custom-text>
-        </div>
-        <div class="boton-container">
-          <boton-el class="iniciar-sesion">Iniciar sesión</boton-el>
-          <boton-el class="registrarse">Registrarse</boton-el>
+      <div class="rules-page">
+        <div class="text-container">
+          <custom-text>ESPERANDO A QUE EL RIVAL APRIETE JUGAR</custom-text>
+          
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -37,46 +31,25 @@ customElements.define(
     </div>
       `;
 
-      function goTo(ruta, clase) {
-        div.querySelector(clase).addEventListener("click", () => {
-          Router.go(ruta);
-        });
-      }
-
       style.innerHTML = `
-      .home-page {
+      .rules-page {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
-      } 
-    
-      .title__container{
-        margin: 0 auto;
-        text-align: center;
-        width:250px;
-        margin-top: 40px;
-        margin-bottom: 40px;
-      }
-    
-      @media (min-width: 900px) {
-        .title__container {
-          
-        }
-      }
-    
-      .boton-container{
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
       }
 
-      .iniciar-sesion{
-        margin-bottom: 20px;
+      .text-container{
+        width: 100%;
+        width: 300px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        text-align:center;
+        justify-content: center;
       }
-    
+
       .jugada-container{
         width:280px;
         display: flex;
@@ -92,10 +65,10 @@ customElements.define(
           bottom: -70px;
         }
       }
-    
+
       .jugada{
       }
-      
+
       @media (min-width: 769px) {
         .jugada {
         height:180px;
@@ -103,8 +76,6 @@ customElements.define(
         }
       }
       `;
-      goTo("/register", ".registrarse");
-      goTo("/signin ", ".iniciar-sesion");
 
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);

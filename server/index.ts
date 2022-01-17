@@ -126,20 +126,18 @@ app.get("/rooms/:roomId", (req, res) => {
 app.post("/hostorguest", (req, res) => {
   const { fullName } = req.body;
   const { userId } = req.body;
-  const { roomId } = req.body;
   const { rtdbRoomId } = req.body;
 
   const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
-  rtdbRoomRef.on("value", (snapshot) => {
+  rtdbRoomRef.get().then((snapshot) => {
     const data = snapshot.val();
-
+    //data.host.online
     if (userId == data.owner) {
       rtdbRoomRef.update({
         host: {
           fullname: fullName,
           userId: userId,
           jugada: "",
-          online: true,
         },
       });
     } else if (userId != data.owner) {
@@ -148,17 +146,51 @@ app.post("/hostorguest", (req, res) => {
           fullname: fullName,
           userId: userId,
           jugada: "",
-          online: true,
         },
       });
-      res.json({ message: "ok" });
     }
+    res.json({ message: "hostorguest completo" });
   });
+});
+
+app.post("/setonline", (req, res) => {
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
+
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef.get().then((snapshot) => {
+    const data = snapshot.val();
+    console.log(data);
+
+    if (userId == data.owner) {
+      rtdbRoomRef.child("host").update({ online: true });
+    } else if (userId != data.owner) {
+      rtdbRoomRef.child("guest").update({ online: true });
+    }
+    res.json({ user: "online" });
+  });
+
+  // .then(() => {
+  //   res.json({ user: "online" });
+  // });
 });
 
 app.post("/setoffline", (req, res) => {
   const { userId } = req.body;
   const { rtdbRoomId } = req.body;
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef.get().then((snap) => {
+    const data = snap.val();
+
+    if (userId == data.owner) {
+      rtdbRoomRef.child("host").update({ online: false });
+    } else if (userId != data.owner) {
+      rtdbRoomRef.child("guest").update({ online: false });
+    }
+  });
+  res.json({ user: "offline" });
 });
 
 //para recuperar todos los datos a partir del roomid cuando quiero reingresar a una sala
@@ -203,17 +235,18 @@ app.post("/setoffline", (req, res) => {
 //     });
 // });
 
+/* DE ACA PARA ABAJO PARA SUBIRLO A HEROKU */
 // //la primera linea es para servir el frontend, y la segunda es para setear un default en la url y no falle si no esta declarado en el BE
-// app.use(express.static("dist"));
+app.use(express.static("dist"));
 
-// const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
+const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");
 
-// app.get("*", (req, res) => {
-//   //res.send("hola"); esto para que de una respuesta, a modo de ejemplo
-//   res.sendFile(rutaRelativa);
-//   // en esto de arriba se esa una variable especial __dirname que representa la carpeta en la que estoy en este momento
-//   //es para que si no existe ninguna de las rutas en la url use el dist/index.html
-// });
+app.get("*", (req, res) => {
+  //res.send("hola"); esto para que de una respuesta, a modo de ejemplo
+  res.sendFile(rutaRelativa);
+  // en esto de arriba se esa una variable especial __dirname que representa la carpeta en la que estoy en este momento
+  //es para que si no existe ninguna de las rutas en la url use el dist/index.html
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);

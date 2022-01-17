@@ -1,4 +1,5 @@
 import { Router } from "@vaadin/router";
+import { state } from "../../state";
 
 customElements.define(
   "play-game",
@@ -17,10 +18,10 @@ customElements.define(
       const div = document.createElement("div");
 
       div.innerHTML = `
-      <div class="home-page">
+      <div class="rules-page">
         <div class="text-container">
-          <custom-text>Elije uno</custom-text>
-          <boton-el class="return-to-game-btn">Regresar al inicio</boton-el>
+          <custom-text>ACA SE JUEGA</custom-text>
+          
         </div>
         <div class="jugada-container">
           <my-jugada class="jugada" jugada="piedra"></my-jugada>
@@ -30,14 +31,8 @@ customElements.define(
     </div>
       `;
 
-      function goTo(ruta, clase) {
-        div.querySelector(clase).addEventListener("click", () => {
-          Router.go(ruta);
-        });
-      }
-
       style.innerHTML = `
-      .home-page {
+      .rules-page {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;
@@ -53,10 +48,6 @@ customElements.define(
         flex-direction: column;
         text-align:center;
         justify-content: center;
-      }
-
-      .new-game-btn{
-        margin-bottom: 20px;
       }
 
       .jugada-container{
@@ -85,8 +76,6 @@ customElements.define(
         }
       }
       `;
-
-      goTo("/", ".return-to-game-btn");
 
       this.shadow.appendChild(div);
       this.shadow.appendChild(style);

@@ -8,6 +8,8 @@ router.setRoutes([
   { path: "/signin", component: "sign-in" },
   { path: "/join-room", component: "join-room" },
   { path: "/share-key", component: "share-key" },
-  { path: "/play-game", component: "play-game" },
+  { path: "/reglas-game", component: "reglas-game" },
   { path: "/complete-room", component: "complete-room" },
+  { path: "/play-game", component: "play-game" },
+  { path: "/waiting-play", component: "waiting-play" },
 ]);

@@ -13,10 +13,11 @@ customElements.define(
       this.render();
 
       const newGameBoton = this.shadow.querySelector(".nuevo-juego");
+
       newGameBoton.addEventListener("click", () => {
         state.askNewRoom(() => {
           state.accessToRoom(() => {
-            state.checkHostAndGuest(() => {
+            state.setHostAndGuest(() => {
               Router.go("/share-key");
             });
           });
