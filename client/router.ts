@@ -12,4 +12,5 @@ router.setRoutes([
   { path: "/complete-room", component: "complete-room" },
   { path: "/play-game", component: "play-game" },
   { path: "/waiting-play", component: "waiting-play" },
+  { path: "/results-page", component: "results-page" },
 ]);

@@ -11,6 +11,9 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+      state.listenReady(() => {
+        Router.go("/play-game");
+      });
     }
     render() {
       const style = document.createElement("style");
@@ -18,9 +21,9 @@ customElements.define(
       const div = document.createElement("div");
 
       div.innerHTML = `
-      <div class="rules-page">
+      <div class="waiting-page">
         <div class="text-container">
-          <custom-text>ESPERANDO A QUE EL RIVAL APRIETE JUGAR</custom-text>
+          <custom-text>Esperando a que Paula${"3"} presione ¡Jugar!...</custom-text>
           
         </div>
         <div class="jugada-container">
@@ -32,7 +35,7 @@ customElements.define(
       `;
 
       style.innerHTML = `
-      .rules-page {
+      .waiting-page {
         background-image: url(${imageURL});
         height: 100vh;
         display: flex;

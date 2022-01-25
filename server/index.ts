@@ -7,6 +7,7 @@ import * as cors from "cors";
 const port = process.env.PORT || 3005;
 //const dev = process.env.NODE_ENV == "development";
 import * as path from "path";
+import { type } from "os";
 //al final esta app.use(express.static("dist")); que sirve el frontend
 
 const app = express();
@@ -137,7 +138,6 @@ app.post("/hostorguest", (req, res) => {
         host: {
           fullname: fullName,
           userId: userId,
-          jugada: "",
         },
       });
     } else if (userId != data.owner) {
@@ -145,7 +145,6 @@ app.post("/hostorguest", (req, res) => {
         guest: {
           fullname: fullName,
           userId: userId,
-          jugada: "",
         },
       });
     }
@@ -170,10 +169,6 @@ app.post("/setonline", (req, res) => {
     }
     res.json({ user: "online" });
   });
-
-  // .then(() => {
-  //   res.json({ user: "online" });
-  // });
 });
 
 app.post("/setoffline", (req, res) => {
@@ -193,50 +188,118 @@ app.post("/setoffline", (req, res) => {
   res.json({ user: "offline" });
 });
 
-//para recuperar todos los datos a partir del roomid cuando quiero reingresar a una sala
-// app.get("/access-room/:roomId", (req, res) => {
-//   const { roomId } = req.params;
+app.post("/setready", (req, res) => {
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
 
-//   const dataRecuperada = {
-//     rtdbRoomId: "",
-//     userId: "",
-//     fullName: "",
-//   };
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
 
-//   roomsCollection
-//     .doc(roomId)
-//     .get()
-//     .then((snap) => {
-//       if (snap.exists) {
-//         const data = snap.data();
-//         dataRecuperada.rtdbRoomId = data.rtdbRoomId;
-//         //res.json(dataRecuperada);
+  rtdbRoomRef.get().then((snapshot) => {
+    const data = snapshot.val();
+    console.log(data);
 
-//         const rtdbRoomRef = rtdb.ref("rooms/" + data.rtdbRoomId);
-//         rtdbRoomRef.on("value", (snapshot) => {
-//           const data = snapshot.val();
-//           dataRecuperada.userId = data.owner;
-//           //res.json(dataRecuperada);
+    if (userId == data.owner) {
+      rtdbRoomRef.child("host").update({ ready: true });
+    } else if (userId != data.owner) {
+      rtdbRoomRef.child("guest").update({ ready: true });
+    }
+    res.json({ user: "online" });
+  });
+});
 
-//           userCollection
-//             .doc(dataRecuperada.userId)
-//             .get()
-//             .then((snap) => {
-//               const data = snap.data();
-//               dataRecuperada.fullName = data.name;
-//               res.json(dataRecuperada);
-//             });
-//         });
-//       } else {
-//         res.status(401).json({
-//           message: "codigo de room incorrecto",
-//         });
-//       }
-//     });
-// });
+app.post("/setunready", (req, res) => {
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef.get().then((snap) => {
+    const data = snap.val();
+
+    if (userId == data.owner) {
+      rtdbRoomRef.child("host").update({ ready: false });
+    } else if (userId != data.owner) {
+      rtdbRoomRef.child("guest").update({ ready: false });
+    }
+  });
+  res.json({ user: "offline" });
+});
+
+app.post("/setmove", (req, res) => {
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
+  const { move } = req.body;
+
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef.get().then((snapshot) => {
+    const data = snapshot.val();
+    console.log(data);
+
+    if (userId == data.owner) {
+      rtdbRoomRef.child("host").update({ jugada: move });
+    } else if (userId != data.owner) {
+      rtdbRoomRef.child("guest").update({ jugada: move });
+    }
+    res.json({ user: "move setted" });
+  });
+});
+
+app.post("/addplaytohistory", (req, res) => {
+  //const { userId } = req.body;
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
+  const { currentGame } = req.body;
+
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef.get().then((snapshot) => {
+    const data = snapshot.val();
+
+    const hostName = data.host.fullname;
+    const guestName = data.guest.fullname;
+    console.log(data);
+
+    console.log(hostName, guestName);
+
+    if (userId == data.owner) {
+      const play = {
+        [hostName]: currentGame.myPlay,
+        [guestName]: currentGame.opponentPlay,
+      };
+
+      if (data.history == undefined) {
+        rtdbRoomRef.update({ history: [play] });
+      } else {
+        const plays = data.history;
+        plays.push(play);
+        rtdbRoomRef.update({
+          history: plays,
+        });
+      }
+    } else if (userId !== data.owner) {
+      const play = {
+        [hostName]: currentGame.opponentPlay,
+        [guestName]: currentGame.myPlay,
+      };
+
+      if (data.history == undefined) {
+        rtdbRoomRef.update({ history: [play] });
+      } else {
+        const plays = data.history;
+        plays.push(play);
+        rtdbRoomRef.update({
+          history: plays,
+        });
+      }
+    }
+  });
+  res.json({ message: "history setted" });
+
+  // roomsCollection.doc(roomId.toString()).update({ history: [] });
+});
 
 /* DE ACA PARA ABAJO PARA SUBIRLO A HEROKU */
-// //la primera linea es para servir el frontend, y la segunda es para setear un default en la url y no falle si no esta declarado en el BE
+//la primera linea es para servir el frontend, y la segunda es para setear un default en la url y no falle si no esta declarado en el BE
 app.use(express.static("dist"));
 
 const rutaRelativa = path.resolve(__dirname, "../dist/", "index.html");

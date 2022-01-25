@@ -11,12 +11,16 @@ customElements.define(
     }
     connectedCallback() {
       this.render();
+
+      window.addEventListener("beforeunload", () => {
+        state.setUnready();
+      });
+
       const botonJugar = this.shadowRoot.querySelector(".start-game");
       botonJugar.addEventListener("click", () => {
-        state.listenReady(() => {
-          //Router.go("/play-game")
+        state.setReady(() => {
+          Router.go("/waiting-play");
         });
-        console.log("EL JUEGO EMPEZO");
       });
     }
     render() {
