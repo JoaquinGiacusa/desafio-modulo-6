@@ -29,7 +29,7 @@ customElements.define(
 
       div.innerHTML = `
       <div class="new-game-page">
-        <div class="title__container">
+         <div class="title__container">
           <custom-text text="title"> Piedra Papel ó Tijera </custom-text>
         </div>
         <div class="input-container">
@@ -55,6 +55,9 @@ customElements.define(
         flex-direction: column;
         align-items: center;
       } 
+
+
+
     
       .title__container{
         margin: 0 auto;

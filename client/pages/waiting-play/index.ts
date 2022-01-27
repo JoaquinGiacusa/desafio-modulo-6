@@ -5,14 +5,30 @@ customElements.define(
   "waiting-play",
   class extends HTMLElement {
     shadow: ShadowRoot;
+    roomId: string;
+    name: string;
+    opponentName: string;
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
+      const cs = state.getState();
+      this.roomId = cs.roomId;
+      this.name = cs.fullName;
+      this.opponentName = cs.opponentName;
       this.render();
-      state.listenReady(() => {
-        Router.go("/play-game");
+
+      state.checkOpponentReady();
+
+      state.suscribe(() => {
+        if (
+          cs.ready == true &&
+          cs.opponentReady == true &&
+          window.location.pathname == "/waiting-play"
+        ) {
+          Router.go("/play-game");
+        }
       });
     }
     render() {
@@ -23,7 +39,7 @@ customElements.define(
       div.innerHTML = `
       <div class="waiting-page">
         <div class="text-container">
-          <custom-text>Esperando a que Paula${"3"} presione ¡Jugar!...</custom-text>
+          <custom-text>Esperando a que  presione ¡Jugar!...</custom-text>
           
         </div>
         <div class="jugada-container">

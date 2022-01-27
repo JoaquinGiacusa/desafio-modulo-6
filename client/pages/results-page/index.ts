@@ -10,12 +10,35 @@ customElements.define(
       this.shadow = this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
-      state.pushToHistory(() => {
-        state.getHistoryPlays(() => {
-          state.winsResults();
-          this.render();
-        });
+      const cs = state.getState();
+
+      state.getHistoryPlays(() => {
+        state.winsResults();
+        this.render();
       });
+
+      // state.pushToHistory(
+      //   state.suscribe(() => {
+      //     if (
+      //       cs.status == "history setted" &&
+      //       window.location.pathname == "/results-page"
+      //     ) {
+      //       state.getHistoryPlays(() => {
+      //         state.winsResults();
+      //         this.render();
+      //       });
+      //     }
+      //   })
+      // );
+
+      // state.pushToHistory(() => {
+      //   if (cs.status == "history setted") {
+      //     state.getHistoryPlays(() => {
+      //       state.winsResults();
+      //       this.render();
+      //     });
+      //   }
+      // });
     }
     render() {
       const style = document.createElement("style");
@@ -43,8 +66,8 @@ customElements.define(
         </div>
         <div class="score">
         <custom-text text="body">Score</custom-text>
-        <custom-text text="body">${cs.fullName}:${cs.results.host}</custom-text>
-        <custom-text text="body">${cs.opponentName}:${cs.results.guest}</custom-text>
+        <custom-text text="body">${cs.fullName}:${cs.results.me}</custom-text>
+        <custom-text text="body">${cs.opponentName}:${cs.results.opp}</custom-text>
         </div>
         <boton-el class="boton">Volver a jugar</boton-el>
         `;

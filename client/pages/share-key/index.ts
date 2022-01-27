@@ -20,11 +20,25 @@ customElements.define(
 
       this.render();
 
-      state.setOnline(() => {
-        state.checkUsersOnline(() => {
+      state.setOnline();
+      state.checkOpponentOnline();
+
+      state.suscribe(() => {
+        if (
+          cs.online == true &&
+          cs.opponentOnline == true &&
+          window.location.pathname == "/share-key"
+        ) {
           Router.go("/reglas-game");
-        });
+        }
       });
+      // state.setOnline(() => {
+      //   if (cs.status == "user online") {
+      //     state.checkUsersOnline(() => {
+      //       Router.go("/reglas-game");
+      //     });
+      //   }
+      // });
     }
     render() {
       const style = document.createElement("style");
@@ -32,13 +46,7 @@ customElements.define(
 
       this.innerHTML = `
       <div class="main-container">
-        <div class="header">
-          <div class="scores">
-            <h3>${this.name}:10</h3>
-            <h3>Joaquin:10</h3>
-          </div>
-          <div class="header-roomId">Sala:${this.roomId}</div>
-        </div>
+    
         <div class="text-container">
           <custom-text>Compartí el código:</custom-text>
           <p class="codigo-roomId">${this.roomId}</p>

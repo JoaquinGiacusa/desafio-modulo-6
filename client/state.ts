@@ -13,10 +13,14 @@ const state = {
     userId: "",
     roomId: "",
     rtdbRoomId: "",
+    online: false,
+    ready: false,
     currentGame: { opponentPlay: "", myPlay: "" },
     history: [],
     status: "",
     opponentName: "",
+    opponentOnline: false,
+    opponentReady: false,
     results: {},
   },
   listeners: [],
@@ -30,7 +34,7 @@ const state = {
   //   } else this.setState(JSON.parse(localData));
   // },
 
-  pushToHistory(callback) {
+  pushToHistory() {
     const cs = this.getState();
 
     fetch(API_BASE_URL + "/addplaytohistory", {
@@ -40,7 +44,6 @@ const state = {
         userId: cs.userId,
         rtdbRoomId: cs.rtdbRoomId,
         currentGame: cs.currentGame,
-        fullName: cs.fullName,
       }),
     })
       .then((res) => {
@@ -48,7 +51,6 @@ const state = {
       })
       .then((data) => {
         console.log(data);
-        callback();
       });
   },
 
@@ -59,14 +61,14 @@ const state = {
     chatroomsRef.get().then((snapshot) => {
       const rtdbRoomRef = snapshot.val();
 
-      if (rtdbRoomRef.owner == cs.userId) {
-        cs.opponentName = rtdbRoomRef.guest.fullname;
+      if (rtdbRoomRef.history != undefined) {
         cs.history = rtdbRoomRef.history;
         this.setState(cs);
         callback();
-      } else if (rtdbRoomRef.owner !== cs.userId) {
-        cs.opponentName = rtdbRoomRef.host.fullname;
-        cs.history = rtdbRoomRef.history;
+      } else if (rtdbRoomRef.history == undefined) {
+        // cs.results = { fullName: 0, opponentName: 0 };
+        // this.setState(cs);
+        cs.history = [{ [cs.fullName]: "piedra", [cs.opponentName]: "piedra" }];
         this.setState(cs);
         callback();
       }
@@ -75,6 +77,7 @@ const state = {
 
   setMyMove(move) {
     const cs = this.getState();
+    //seteo mi movimiento en el state
     cs.currentGame.myPlay = move;
 
     if (cs.rtdbRoomId) {
@@ -165,27 +168,24 @@ const state = {
   winsResults() {
     const cs = this.getState();
 
-    var host = 0;
-    var guest = 0;
-    console.log(cs.fullName);
-    console.log(cs);
+    var me = 0;
+    var opp = 0;
 
     for (const jugada of cs.history) {
       const resultado = this.whoWins(
         jugada[cs.fullName],
         jugada[cs.opponentName]
       );
-      console.log(resultado);
 
       if (resultado == "Empate") {
       } else if (resultado == "Ganaste") {
-        host++;
+        me++;
       } else if (resultado == "Perdiste") {
-        guest++;
+        opp++;
       }
     }
 
-    cs.results = { host: host, guest: guest };
+    cs.results = { me: me, opp: opp };
     this.setState(cs);
   },
 
@@ -193,6 +193,23 @@ const state = {
     const currentState = this.getState();
     currentState.fullName = name;
     this.setState(currentState);
+  },
+
+  setOpponentName() {
+    const cs = this.getState();
+    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+    chatroomsRef.get().then((snapshot) => {
+      const rtdbRoomRef = snapshot.val();
+
+      if (cs.userId == rtdbRoomRef.owner) {
+        cs.opponentName = rtdbRoomRef.guest.fullname;
+        this.setState(cs);
+      } else if (cs.userId != rtdbRoomRef.owner) {
+        cs.opponentName = rtdbRoomRef.host.fullname;
+        this.setState(cs);
+      }
+    });
   },
 
   register(callback) {
@@ -230,7 +247,6 @@ const state = {
           return res.json();
         })
         .then((data) => {
-          console.log(data);
           if (data.message == "user not found") {
             console.error(data.message);
           } else {
@@ -287,7 +303,6 @@ const state = {
     const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
     chatroomsRef.get().then((snapshot) => {
       const rtdbRoomRef = snapshot.val();
-      console.log("rtdbRoomRef", rtdbRoomRef);
 
       if (rtdbRoomRef.host !== undefined && rtdbRoomRef.guest !== undefined) {
         if (cs.fullName == rtdbRoomRef.host.fullname) {
@@ -300,7 +315,6 @@ const state = {
           };
         }
         this.setState(cs);
-        console.log("CALLBACK ASDASD");
 
         callback();
       } else if (
@@ -330,32 +344,57 @@ const state = {
         return res.json();
       })
       .then((data) => {
-        console.log(data);
         cs.status = data;
         this.setState(cs);
         callback();
       });
   },
 
-  checkUsersOnline(callback?) {
+  checkOpponentOnline() {
     const cs = this.getState();
     const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
 
     chatroomsRef.on("value", (snapshot) => {
       const rtdbRoomRef = snapshot.val();
 
-      if (rtdbRoomRef.host != undefined && rtdbRoomRef.guest != undefined) {
-        if (
-          rtdbRoomRef.host.online == true &&
-          rtdbRoomRef.guest.online == true
-        ) {
-          callback();
+      if (rtdbRoomRef.guest == undefined) {
+        cs.opponentOnline = false;
+        this.setState(cs);
+      } else if (cs.userId == rtdbRoomRef.owner) {
+        if (rtdbRoomRef.guest.online == true) {
+          cs.opponentOnline = true;
+          this.setState(cs);
+          //callback();
+        }
+      } else if (cs.userId != rtdbRoomRef.owner) {
+        if (rtdbRoomRef.host.online == true) {
+          cs.opponentOnline = true;
+          this.setState(cs);
+          //callback();
         }
       }
     });
   },
 
-  setOnline(callback?) {
+  // checkUsersOnline(callback?) {
+  //   const cs = this.getState();
+  //   const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+  //   chatroomsRef.on("value", (snapshot) => {
+  //     const rtdbRoomRef = snapshot.val();
+
+  //     if (rtdbRoomRef.host != undefined && rtdbRoomRef.guest != undefined) {
+  //       if (
+  //         rtdbRoomRef.host.online == true &&
+  //         rtdbRoomRef.guest.online == true
+  //       ) {
+  //         callback();
+  //       }
+  //     }
+  //   });
+  // },
+
+  setOnline() {
     const cs = this.getState();
     if (cs.rtdbRoomId) {
       fetch(API_BASE_URL + "/setonline", {
@@ -370,8 +409,10 @@ const state = {
           return res.json();
         })
         .then((data) => {
-          console.log("DATA DEL SETONLINE XD", data);
-          callback();
+          if (data.online == true) {
+            cs.online = true;
+          }
+          this.setState(cs);
         });
     } else {
       console.error("hubo un error en el setonline");
@@ -397,20 +438,46 @@ const state = {
       });
   },
 
-  listenReady(callback) {
+  // listenReady(callback) {
+  //   const cs = this.getState();
+  //   const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+
+  //   chatroomsRef.on("value", (snapshot) => {
+  //     const rtdbRoomRef = snapshot.val();
+
+  //     if (rtdbRoomRef.host.ready == true && rtdbRoomRef.guest.ready == true) {
+  //       callback();
+  //     }
+  //   });
+  // },
+  checkOpponentReady() {
     const cs = this.getState();
     const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
 
     chatroomsRef.on("value", (snapshot) => {
       const rtdbRoomRef = snapshot.val();
 
-      if (rtdbRoomRef.host.ready == true && rtdbRoomRef.guest.ready == true) {
-        callback();
+      if (cs.userId == rtdbRoomRef.owner) {
+        if (rtdbRoomRef.guest.ready == true) {
+          cs.opponentReady = true;
+          this.setState(cs);
+        } else if (rtdbRoomRef.guest.ready == false) {
+          cs.opponentReady = false;
+          this.setState(cs);
+        }
+      } else if (cs.userId != rtdbRoomRef.owner) {
+        if (rtdbRoomRef.host.ready == true) {
+          cs.opponentReady = true;
+          this.setState(cs);
+        } else if (rtdbRoomRef.host.ready == false) {
+          cs.opponentReady = false;
+          this.setState(cs);
+        }
       }
     });
   },
 
-  setReady(callback?) {
+  setReady() {
     const cs = this.getState();
     if (cs.rtdbRoomId) {
       fetch(API_BASE_URL + "/setready", {
@@ -425,8 +492,10 @@ const state = {
           return res.json();
         })
         .then((data) => {
-          console.log(data);
-          callback();
+          if (data.ready == true) {
+            cs.ready = true;
+          }
+          this.setState(cs);
         });
     } else {
       console.error("hubo un error en el setReady");

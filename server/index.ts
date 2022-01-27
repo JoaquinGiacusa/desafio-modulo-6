@@ -138,6 +138,8 @@ app.post("/hostorguest", (req, res) => {
         host: {
           fullname: fullName,
           userId: userId,
+          online: false,
+          ready: false,
         },
       });
     } else if (userId != data.owner) {
@@ -145,6 +147,8 @@ app.post("/hostorguest", (req, res) => {
         guest: {
           fullname: fullName,
           userId: userId,
+          online: false,
+          ready: false,
         },
       });
     }
@@ -167,7 +171,7 @@ app.post("/setonline", (req, res) => {
     } else if (userId != data.owner) {
       rtdbRoomRef.child("guest").update({ online: true });
     }
-    res.json({ user: "online" });
+    res.json({ online: true });
   });
 });
 
@@ -181,7 +185,8 @@ app.post("/setoffline", (req, res) => {
 
     if (userId == data.owner) {
       rtdbRoomRef.child("host").update({ online: false });
-    } else if (userId != data.owner) {
+    }
+    if (userId != data.owner) {
       rtdbRoomRef.child("guest").update({ online: false });
     }
   });
@@ -196,15 +201,16 @@ app.post("/setready", (req, res) => {
 
   rtdbRoomRef.get().then((snapshot) => {
     const data = snapshot.val();
-    console.log(data);
 
     if (userId == data.owner) {
       rtdbRoomRef.child("host").update({ ready: true });
-    } else if (userId != data.owner) {
+    }
+
+    if (userId != data.owner) {
       rtdbRoomRef.child("guest").update({ ready: true });
     }
-    res.json({ user: "online" });
   });
+  res.json({ ready: true });
 });
 
 app.post("/setunready", (req, res) => {
@@ -252,50 +258,34 @@ app.post("/addplaytohistory", (req, res) => {
 
   const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
 
-  rtdbRoomRef.get().then((snapshot) => {
-    const data = snapshot.val();
+  rtdbRoomRef
+    .get()
+    .then((snapshot) => {
+      const data = snapshot.val();
 
-    const hostName = data.host.fullname;
-    const guestName = data.guest.fullname;
-    console.log(data);
+      const hostName = data.host.fullname;
+      const guestName = data.guest.fullname;
 
-    console.log(hostName, guestName);
+      if (userId == data.owner) {
+        const play = {
+          [hostName]: currentGame.myPlay,
+          [guestName]: currentGame.opponentPlay,
+        };
 
-    if (userId == data.owner) {
-      const play = {
-        [hostName]: currentGame.myPlay,
-        [guestName]: currentGame.opponentPlay,
-      };
-
-      if (data.history == undefined) {
-        rtdbRoomRef.update({ history: [play] });
-      } else {
-        const plays = data.history;
-        plays.push(play);
-        rtdbRoomRef.update({
-          history: plays,
-        });
+        if (data.history == undefined) {
+          rtdbRoomRef.update({ history: [play] });
+        } else {
+          const plays = data.history;
+          plays.push(play);
+          rtdbRoomRef.update({
+            history: plays,
+          });
+        }
       }
-    } else if (userId !== data.owner) {
-      const play = {
-        [hostName]: currentGame.opponentPlay,
-        [guestName]: currentGame.myPlay,
-      };
-
-      if (data.history == undefined) {
-        rtdbRoomRef.update({ history: [play] });
-      } else {
-        const plays = data.history;
-        plays.push(play);
-        rtdbRoomRef.update({
-          history: plays,
-        });
-      }
-    }
-  });
-  res.json({ message: "history setted" });
-
-  // roomsCollection.doc(roomId.toString()).update({ history: [] });
+    })
+    .then(() => {
+      res.json({ message: "history setted" });
+    });
 });
 
 /* DE ACA PARA ABAJO PARA SUBIRLO A HEROKU */

@@ -25,17 +25,23 @@ import "./pages/results-page";
   const root = document.querySelector(".root");
 })();
 
-state.setState({
-  fullName: "test",
-  userId: "SHkVM7SEaugyLxUhbKF0",
-  roomId: "",
-  rtdbRoomId: "Z7wdBdeNyCqISmNjh-NnC",
-  currentGame: { opponentPlay: "tijera", myPlay: "piedra" },
-  history: [],
-  status: "",
-  opponentName: "",
-  results: {},
-});
+// state.setState({
+//   fullName: "",
+//   userId: "SHkVM7SEaugyLxUhbKF0",
+//   roomId: "",
+//   rtdbRoomId: "aMApNbmwwUUnIKluZnhza",
+//   online: false,
+//   ready: false,
+//   currentGame: {},
+//   history: [],
+//   status: "",
+//   opponentName: "",
+//   opponentOnline: false,
+//   opponentReady: false,
+//   results: {},
+// });
+
+//console.log("LISTENERS", state.listeners);
 
 // state.pushToHistory();
 // state.getMoves();

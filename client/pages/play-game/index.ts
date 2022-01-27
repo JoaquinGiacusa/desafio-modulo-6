@@ -70,6 +70,7 @@ customElements.define(
                 if (state.getState().status == "ambos jugadores ya jugaron") {
                   state.getMoves(() => {
                     seeElection();
+                    state.pushToHistory();
                     state.setUnready();
                   });
                 } else if (
