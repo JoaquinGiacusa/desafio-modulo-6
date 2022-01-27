@@ -111,7 +111,7 @@ customElements.define(
               });
             }
           }
-        }, 1000);
+        }, 1500);
       }
 
       function seeElection() {
@@ -147,7 +147,7 @@ customElements.define(
       `;
         setTimeout(() => {
           Router.go("/results-page");
-        }, 5000);
+        }, 3000);
       }
 
       createMoveSelector();
