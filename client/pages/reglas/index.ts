@@ -55,7 +55,7 @@ customElements.define(
       <div class="header">
       <div class="scores">
         <h3>${this.name}: ${cs.results.me}</h3>
-        <h3>${this.name}: ${cs.results.opp}</h3>
+        <h3>${this.opponentName}: ${cs.results.opp}</h3>
       </div>
       <div class="header-roomId">Sala:${this.roomId}</div>
     </div>
