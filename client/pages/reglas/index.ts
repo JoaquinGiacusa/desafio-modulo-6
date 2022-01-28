@@ -14,13 +14,14 @@ customElements.define(
       this.shadow = this.attachShadow({ mode: "open" });
     }
     connectedCallback() {
+      state.setOpponentName();
       const cs = state.getState();
+
       this.roomId = cs.roomId;
       this.name = cs.fullName;
       this.opponentName = cs.opponentName;
 
-      state.setOpponentName();
-
+      console.log(this.opponentName);
       state.getHistoryPlays(() => {
         console.log("history", cs.history);
 
@@ -49,14 +50,13 @@ customElements.define(
       const style = document.createElement("style");
       const imageURL = require("url:../../img/fondo-full.png");
       const div = document.createElement("div");
-      console.log("hola");
 
       div.innerHTML = `
       <div class="rules-page">
       <div class="header">
       <div class="scores">
         <h3>${this.name}: ${cs.results.me}</h3>
-        <h3>${this.opponentName}: ${cs.results.opp}</h3>
+        <h3>${cs.opponentName}: ${cs.results.opp}</h3>
       </div>
       <div class="header-roomId">Sala:${this.roomId}</div>
     </div>
