@@ -49,6 +49,7 @@ customElements.define(
       const style = document.createElement("style");
       const imageURL = require("url:../../img/fondo-full.png");
       const div = document.createElement("div");
+      console.log("hola");
 
       div.innerHTML = `
       <div class="rules-page">
