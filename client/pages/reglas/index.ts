@@ -20,6 +20,7 @@ customElements.define(
       this.roomId = cs.roomId;
       this.name = cs.fullName;
       this.opponentName = cs.opponentName;
+      state.deleteMyLastMove();
 
       console.log(this.opponentName);
       state.getHistoryPlays(() => {

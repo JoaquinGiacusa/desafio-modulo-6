@@ -16,7 +16,7 @@ customElements.define(
       const cs = state.getState();
       this.roomId = cs.roomId;
       this.name = cs.fullName;
-      this.opponentName = cs.opponentName;
+
       this.render();
 
       state.checkOpponentReady();
@@ -32,6 +32,7 @@ customElements.define(
       });
     }
     render() {
+      const cs = state.getState();
       const style = document.createElement("style");
       const imageURL = require("url:../../img/fondo-full.png");
       const div = document.createElement("div");
@@ -39,7 +40,7 @@ customElements.define(
       div.innerHTML = `
       <div class="waiting-page">
         <div class="text-container">
-          <custom-text>Esperando a que  presione ¡Jugar!...</custom-text>
+          <custom-text>Esperando a que ${cs.opponentName} presione ¡Jugar!...</custom-text>
           
         </div>
         <div class="jugada-container">

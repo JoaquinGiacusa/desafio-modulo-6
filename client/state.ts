@@ -1,3 +1,4 @@
+import { callbackify } from "util";
 import { rtdb } from "./rtdb";
 const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:3005";
 
@@ -103,6 +104,30 @@ const state = {
     }
   },
 
+  deleteMyLastMove(callback?) {
+    const cs = this.getState();
+
+    if (cs.rtdbRoomId) {
+      fetch(API_BASE_URL + "/deletlastmove", {
+        method: "post",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          userId: cs.userId,
+          rtdbRoomId: cs.rtdbRoomId,
+        }),
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data);
+          //callback();
+        });
+    } else {
+      console.error("hubo un error en el deletemove");
+    }
+  },
+
   checkMoves(callback) {
     const cs = this.getState();
     const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
@@ -118,7 +143,10 @@ const state = {
 
         this.setState(cs);
         callback();
-      } else {
+      } else if (
+        rtdbRoomRef.host.jugada != undefined ||
+        rtdbRoomRef.guest.jugada != undefined
+      ) {
         cs.status = "ambos jugadores ya jugaron";
         this.setState(cs);
         callback();

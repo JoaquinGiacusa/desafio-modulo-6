@@ -250,6 +250,40 @@ app.post("/setmove", (req, res) => {
   });
 });
 
+app.post("/deletlastmove", (req, res) => {
+  const { userId } = req.body;
+  const { rtdbRoomId } = req.body;
+  //const { move } = req.body;
+
+  const rtdbRoomRef = rtdb.ref("rooms/" + rtdbRoomId);
+
+  rtdbRoomRef
+    .get()
+    .then((snapshot) => {
+      const data = snapshot.val();
+      console.log(data);
+
+      if (userId == data.owner) {
+        rtdbRoomRef.child("host").set({
+          fullname: data.host.fullname,
+          online: data.host.online,
+          ready: data.host.ready,
+          userId: data.host.userId,
+        });
+      } else if (userId != data.owner) {
+        rtdbRoomRef.child("guest").set({
+          fullname: data.guest.fullname,
+          online: data.guest.online,
+          ready: data.guest.ready,
+          userId: data.guest.userId,
+        });
+      }
+    })
+    .then(() => {
+      res.json({ play: "deletlastmove" });
+    });
+});
+
 app.post("/addplaytohistory", (req, res) => {
   //const { userId } = req.body;
   const { userId } = req.body;
